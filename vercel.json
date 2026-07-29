@@ -11,7 +11,5 @@
       "dest": "/api/index.php"
     }
   ],
-  "buildCommand": "curl -sS https://getcomposer.org/installer | php && php composer.phar install --no-interaction --no-ansi --no-dev && npm install && npm run build",
-  "outputDirectory": "public",
   "framework": null
 }
