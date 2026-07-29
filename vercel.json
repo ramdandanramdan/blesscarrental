@@ -11,5 +11,7 @@
       "dest": "/api/index.php"
     }
   ],
+  "buildCommand": "npm install && npm run build",
+  "installCommand": "npm install",
   "framework": null
 }
