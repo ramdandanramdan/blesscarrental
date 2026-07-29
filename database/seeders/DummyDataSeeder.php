@@ -1,0 +1,509 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Article;
+use App\Models\Car;
+use App\Models\Category;
+use App\Models\Faq;
+use App\Models\Page;
+use App\Models\Service;
+use App\Models\Setting;
+use App\Models\Slider;
+use App\Models\Testimonial;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+class DummyDataSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Schema::disableForeignKeyConstraints();
+        DB::table('cars')->truncate();
+        DB::table('categories')->truncate();
+        DB::table('services')->truncate();
+        DB::table('testimonials')->truncate();
+        DB::table('articles')->truncate();
+        DB::table('faqs')->truncate();
+        DB::table('pages')->truncate();
+        DB::table('sliders')->truncate();
+        Schema::enableForeignKeyConstraints();
+
+        $this->downloadImage('https://placehold.co/800x600/0ea5e9/ffffff?text=Toyota+Agya', 'cars/toyota-agya.jpg');
+        $this->downloadImage('https://placehold.co/800x600/0ea5e9/ffffff?text=Daihatsu+Sigra', 'cars/daihatsu-sigra.jpg');
+        $this->downloadImage('https://placehold.co/800x600/0ea5e9/ffffff?text=Honda+Brio', 'cars/honda-brio.jpg');
+        $this->downloadImage('https://placehold.co/800x600/0d9488/ffffff?text=Toyota+Avanza', 'cars/toyota-avanza.jpg');
+        $this->downloadImage('https://placehold.co/800x600/0d9488/ffffff?text=Innova+Reborn', 'cars/innova-reborn.jpg');
+        $this->downloadImage('https://placehold.co/800x600/0d9488/ffffff?text=Innova+Zenix', 'cars/innova-zenix.jpg');
+        $this->downloadImage('https://placehold.co/800x600/7c3aed/ffffff?text=Fortuner+GR', 'cars/fortuner-gr.jpg');
+        $this->downloadImage('https://placehold.co/800x600/7c3aed/ffffff?text=Honda+CR-V', 'cars/honda-cr-v.jpg');
+        $this->downloadImage('https://placehold.co/800x600/f59e0b/ffffff?text=BMW+320i', 'cars/bmw-320i.jpg');
+        $this->downloadImage('https://placehold.co/800x600/f59e0b/ffffff?text=Mercedes+C200', 'cars/mercedes-c200.jpg');
+        $this->downloadImage('https://placehold.co/800x600/ef4444/ffffff?text=Hiace+Premio', 'cars/hiace-premio.jpg');
+        $this->downloadImage('https://placehold.co/800x600/ef4444/ffffff?text=Bus+Isuzu', 'cars/bus-isuzu.jpg');
+        $this->downloadImage('https://placehold.co/800x600/10b981/ffffff?text=Ioniq+5', 'cars/ioniq-5.jpg');
+        $this->downloadImage('https://placehold.co/800x600/10b981/ffffff?text=Wuling+Air+EV', 'cars/wuling-air-ev.jpg');
+
+        $this->downloadImage('https://placehold.co/800x500/0ea5e9/ffffff?text=Tips+Liburan+Keluarga', 'articles/tips-liburan.jpg');
+        $this->downloadImage('https://placehold.co/800x500/0ea5e9/ffffff?text=Mobil+Listrik', 'articles/mobil-listrik.jpg');
+        $this->downloadImage('https://placehold.co/800x500/0ea5e9/ffffff?text=Mobil+Pernikahan', 'articles/mobil-pernikahan.jpg');
+        $this->downloadImage('https://placehold.co/800x500/0ea5e9/ffffff?text=Destinasi+Wisata', 'articles/destinasi-wisata.jpg');
+        $this->downloadImage('https://placehold.co/800x500/0ea5e9/ffffff?text=Tips+Bisnis', 'articles/tips-bisnis.jpg');
+
+        $this->downloadImage('https://placehold.co/1920x800/0ea5e9/ffffff?text=Selamat+Datang', 'sliders/slide-1.jpg');
+        $this->downloadImage('https://placehold.co/1920x800/0d9488/ffffff?text=Promo+Akhir+Pekan', 'sliders/slide-2.jpg');
+        $this->downloadImage('https://placehold.co/1920x800/7c3aed/ffffff?text=Layanan+Driver', 'sliders/slide-3.jpg');
+
+        $this->downloadImage('https://placehold.co/200x200/0ea5e9/ffffff?text=User', 'testimonials/avatar-1.jpg');
+        $this->downloadImage('https://placehold.co/200x200/0d9488/ffffff?text=User', 'testimonials/avatar-2.jpg');
+        $this->downloadImage('https://placehold.co/200x200/7c3aed/ffffff?text=User', 'testimonials/avatar-3.jpg');
+        $this->downloadImage('https://placehold.co/200x200/f59e0b/ffffff?text=User', 'testimonials/avatar-4.jpg');
+        $this->downloadImage('https://placehold.co/200x200/ef4444/ffffff?text=User', 'testimonials/avatar-5.jpg');
+
+        $this->seedSettings();
+        $this->seedCategories();
+        $this->seedCars();
+        $this->seedServices();
+        $this->seedTestimonials();
+        $this->seedArticles();
+        $this->seedFaqs();
+        $this->seedPages();
+        $this->seedSliders();
+    }
+
+    private function downloadImage(string $url, string $path): void
+    {
+        $fullPath = storage_path("app/public/{$path}");
+        if (file_exists($fullPath)) {
+            return;
+        }
+        $dir = dirname($fullPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $ctx = stream_context_create(['http' => ['timeout' => 15, 'user_agent' => 'BlessRentCar/1.0']]);
+        $data = @file_get_contents($url, false, $ctx);
+        if ($data !== false) {
+            file_put_contents($fullPath, $data);
+        }
+    }
+
+    private function seedSettings(): void
+    {
+        $settings = [
+            ['key' => 'company_name', 'value' => 'Bless Rent Car', 'type' => 'text'],
+            ['key' => 'company_tagline', 'value' => 'Solusi Transportasi Terpercaya', 'type' => 'text'],
+            ['key' => 'company_description', 'value' => 'PT. BLESS TRANS MANDIRI adalah perusahaan rental mobil terpercaya di Indonesia dengan pengalaman lebih dari 15 tahun. Kami menyediakan berbagai armada berkualitas dengan harga terjangkau dan layanan profesional 24 jam.', 'type' => 'textarea'],
+            ['key' => 'company_address', 'value' => 'Jl. Raya Perjuangan No. 88, Jakarta Barat 11530', 'type' => 'text'],
+            ['key' => 'company_phone', 'value' => '021-12345678', 'type' => 'text'],
+            ['key' => 'company_whatsapp', 'value' => '6281225062153', 'type' => 'text'],
+            ['key' => 'company_email', 'value' => 'info@blessrentcar.com', 'type' => 'email'],
+            ['key' => 'company_google_maps', 'value' => 'https://maps.google.com/?q=-6.123456,106.123456', 'type' => 'text'],
+            ['key' => 'social_facebook', 'value' => 'https://facebook.com/blessrentcar', 'type' => 'url'],
+            ['key' => 'social_instagram', 'value' => 'https://instagram.com/blessrentcar', 'type' => 'url'],
+            ['key' => 'social_twitter', 'value' => 'https://twitter.com/blessrentcar', 'type' => 'url'],
+            ['key' => 'social_youtube', 'value' => 'https://youtube.com/@blessrentcar', 'type' => 'url'],
+            ['key' => 'social_tiktok', 'value' => 'https://tiktok.com/@blessrentcar', 'type' => 'url'],
+            ['key' => 'meta_title', 'value' => 'Bless Rent Car - Sewa Mobil Terbaik di Indonesia', 'type' => 'text'],
+            ['key' => 'meta_description', 'value' => 'Sewa mobil harian, mingguan, dan bulanan dengan armada berkualitas. Tersedia city car, MPV, SUV, mobil mewah, dan bus. Harga terjangkau, layanan 24 jam.', 'type' => 'textarea'],
+            ['key' => 'meta_keywords', 'value' => 'rental mobil, sewa mobil, rental mobil jakarta, sewa mobil harian, mobil keluarga, mobil mewah', 'type' => 'text'],
+            ['key' => 'operational_hours', 'value' => 'Senin - Minggu: 06:00 - 22:00', 'type' => 'text'],
+        ];
+        foreach ($settings as $data) {
+            Setting::firstOrCreate(['key' => $data['key']], $data);
+        }
+    }
+
+    private function seedCategories(): void
+    {
+        $categories = [
+            ['name' => 'City Car / Hatchback', 'slug' => 'city-car-hatchback', 'description' => 'Mobil kompak dan irit untuk mobilitas harian di perkotaan. Cocok untuk 5 penumpang dengan konsumsi BBM efisien.', 'icon' => 'fa-car', 'sort_order' => 1],
+            ['name' => 'MPV / Keluarga', 'slug' => 'mpv-keluarga', 'description' => 'Mobil keluarga dengan kabin luas untuk 7-8 penumpang. Nyaman untuk perjalanan jauh bersama keluarga besar.', 'icon' => 'fa-car-side', 'sort_order' => 2],
+            ['name' => 'SUV', 'slug' => 'suv', 'description' => 'Sport Utility Vehicle tangguh untuk berbagai medan. Ground clearance tinggi dan fitur keselamatan lengkap.', 'icon' => 'fa-caravan', 'sort_order' => 3],
+            ['name' => 'Mobil Mewah (Luxury)', 'slug' => 'mobil-mewah-luxury', 'description' => 'Sedan dan SUV premium dengan interior mewah dan performa tinggi. Cocok untuk acara VVIP dan bisnis.', 'icon' => 'fa-crown', 'sort_order' => 4],
+            ['name' => 'Commercial / Bus', 'slug' => 'commercial-bus', 'description' => 'Kendaraan komersial dan bus untuk rombongan besar. Kapasitas 16-32 penumpang dengan bagasi luas.', 'icon' => 'fa-bus', 'sort_order' => 5],
+            ['name' => 'Mobil Listrik (EV)', 'slug' => 'mobil-listrik-ev', 'description' => 'Mobil listrik ramah lingkungan dengan teknologi terkini. Biaya operasional rendah dan bebas polusi.', 'icon' => 'fa-bolt', 'sort_order' => 6],
+        ];
+        foreach ($categories as $data) {
+            Category::firstOrCreate(['slug' => $data['slug']], $data);
+        }
+    }
+
+    private function seedCars(): void
+    {
+        $cars = [
+            // ── City Car / Hatchback (cat 1) ──
+            [
+                'category_id' => 1, 'name' => 'Toyota Agya 1.2', 'slug' => 'toyota-agya-1-2',
+                'brand' => 'Toyota', 'model' => 'Agya', 'year' => 2023, 'transmission' => 'Manual', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 250000, 'price_per_week' => 1500000, 'price_per_month' => 5500000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Toyota Agya 1.2 adalah city car yang lincah dan irit bahan bakar. Cocok untuk mobilitas harian di perkotaan dengan konsumsi BBM yang sangat efisien. Dilengkapi fitur keselamatan lengkap dan kabin yang nyaman untuk 5 penumpang.',
+                'specifications' => ['Mesin' => '1.2L 3-silinder', 'Transmisi' => 'Manual 5-percepatan', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['AC Dingin', 'Power Steering', 'Audio Bluetooth', 'USB Port', 'Central Lock', 'Airbag'],
+                'terms' => 'Mobil harus dikembalikan tepat waktu. Keterlambatan akan dikenakan biaya tambahan. Dilarang merokok di dalam mobil.',
+                'main_image' => 'cars/toyota-agya.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 5, 'luggage' => '2 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 1, 'name' => 'Daihatsu Sigra 1.2', 'slug' => 'daihatsu-sigra-1-2',
+                'brand' => 'Daihatsu', 'model' => 'Sigra', 'year' => 2023, 'transmission' => 'Manual', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 275000, 'price_per_week' => 1650000, 'price_per_month' => 6000000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Daihatsu Sigra 1.2 hadir dengan desain modern dan kabin yang luas di kelasnya. Irit bahan bakar dan perawatan mudah, menjadikannya pilihan favorit untuk rental mobil harian.',
+                'specifications' => ['Mesin' => '1.2L 3-silinder', 'Transmisi' => 'Manual 5-percepatan', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['AC Dingin', 'Power Steering', 'Audio MP3', 'USB Port', 'Double Blower', 'Airbag'],
+                'terms' => 'Mobil harus dikembalikan tepat waktu. Keterlambatan akan dikenakan biaya tambahan. Dilarang merokok di dalam mobil.',
+                'main_image' => 'cars/daihatsu-sigra.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 5, 'luggage' => '2 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 1, 'name' => 'Honda Brio Satya', 'slug' => 'honda-brio-satya',
+                'brand' => 'Honda', 'model' => 'Brio Satya', 'year' => 2024, 'transmission' => 'CVT', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 300000, 'price_per_week' => 1800000, 'price_per_month' => 6500000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Honda Brio Satya dengan transmisi CVT memberikan kenyamanan berkendara maksimal di perkotaan. Desain sporty dan modern, ditambah handling yang responsif.',
+                'specifications' => ['Mesin' => '1.2L i-VTEC', 'Transmisi' => 'CVT', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['AC Dingin', 'Power Steering', 'Audio Bluetooth', 'USB Port', 'Keyless Entry', 'Airbag'],
+                'terms' => 'Mobil harus dikembalikan tepat waktu. Keterlambatan akan dikenakan biaya tambahan.',
+                'main_image' => 'cars/honda-brio.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 5, 'luggage' => '2 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+
+            // ── MPV / Keluarga (cat 2) ──
+            [
+                'category_id' => 2, 'name' => 'Toyota Avanza 1.5', 'slug' => 'toyota-avanza-1-5',
+                'brand' => 'Toyota', 'model' => 'Avanza', 'year' => 2023, 'transmission' => 'Manual', 'capacity' => 7,
+                'fuel_type' => 'Bensin', 'price_per_day' => 350000, 'price_per_week' => 2100000, 'price_per_month' => 7500000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Toyota Avanza 1.5 adalah MPV keluarga paling populer di Indonesia. Kabin luas untuk 7 penumpang, bagasi besar, dan mesin bertenaga. Nyaman untuk perjalanan jauh bersama keluarga.',
+                'specifications' => ['Mesin' => '1.5L 4-silinder', 'Transmisi' => 'Manual 5-percepatan', 'BBM' => 'Bensin', 'Kabin' => '7 kursi'],
+                'features' => ['AC Double Blower', 'Power Steering', 'Audio Bluetooth', 'USB Port', 'Central Lock', 'Dual Airbag', 'Parkir Sensor'],
+                'terms' => 'Mobil harus dikembalikan tepat waktu. Keterlambatan akan dikenakan biaya tambahan. Dilarang merokok di dalam mobil.',
+                'main_image' => 'cars/toyota-avanza.jpg',                 'gallery' => [],
+                'seat_count' => 7, 'door_count' => 5, 'luggage' => '3 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 2, 'name' => 'Toyota Innova Reborn', 'slug' => 'toyota-innova-reborn',
+                'brand' => 'Toyota', 'model' => 'Innova Reborn', 'year' => 2023, 'transmission' => 'Automatic', 'capacity' => 7,
+                'fuel_type' => 'Diesel', 'price_per_day' => 500000, 'price_per_week' => 3000000, 'price_per_month' => 11000000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Toyota Innova Reborn adalah MPV premium dengan kenyamanan luar biasa. Mesin diesel bertenaga, kabin mewah, dan fitur keselamatan terkini. Pilihan tepat untuk perjalanan bisnis atau keluarga.',
+                'specifications' => ['Mesin' => '2.4L Diesel', 'Transmisi' => 'Automatic 6-percepatan', 'BBM' => 'Diesel', 'Kabin' => '7 kursi'],
+                'features' => ['AC Auto', 'Power Window', 'Audio Layar', 'Kamera Mundur', 'Cruise Control', 'Dual Airbag', 'ABS', 'EBD'],
+                'terms' => 'Harga belum termasuk BBM untuk tipe ini. Deposit Rp 500.000. Dilarang merokok.',
+                'main_image' => 'cars/innova-reborn.jpg',                 'gallery' => [],
+                'seat_count' => 7, 'door_count' => 5, 'luggage' => '4 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 2, 'name' => 'Toyota Innova Zenix', 'slug' => 'toyota-innova-zenix',
+                'brand' => 'Toyota', 'model' => 'Innova Zenix', 'year' => 2024, 'transmission' => 'Automatic', 'capacity' => 7,
+                'fuel_type' => 'Hybrid', 'price_per_day' => 650000, 'price_per_week' => 3900000, 'price_per_month' => 14000000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Innova Zenix hybrid terbaru dengan teknologi ramah lingkungan. Kabin premium dengan material berkualitas, sunroof, dan fitur keselamatan terlengkap. Pengalaman berkendara terbaik di kelasnya.',
+                'specifications' => ['Mesin' => '2.0L Hybrid', 'Transmisi' => 'e-CVT', 'BBM' => 'Hybrid Bensin', 'Kabin' => '7 kursi'],
+                'features' => ['Sunroof', 'AC Auto 3-Zone', 'Audio JBL', 'Kamera 360', 'Cruise Control', '6 Airbag', 'ABS', 'EBD', 'VSC'],
+                'terms' => 'Harga belum termasuk BBM. Deposit Rp 1.000.000. Mobil tidak boleh dibawa ke luar kota tanpa izin.',
+                'main_image' => 'cars/innova-zenix.jpg',                 'gallery' => [],
+                'seat_count' => 7, 'door_count' => 5, 'luggage' => '4 koper', 'minimum_rent_days' => 2, 'status' => 'active',
+            ],
+
+            // ── SUV (cat 3) ──
+            [
+                'category_id' => 3, 'name' => 'Toyota Fortuner GR', 'slug' => 'toyota-fortuner-gr',
+                'brand' => 'Toyota', 'model' => 'Fortuner GR', 'year' => 2023, 'transmission' => 'Automatic', 'capacity' => 7,
+                'fuel_type' => 'Diesel', 'price_per_day' => 800000, 'price_per_week' => 5000000, 'price_per_month' => 18000000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Toyota Fortuner GR Sport adalah SUV tangguh dengan gaya sporty. Mesin diesel bertenaga, ground clearance tinggi, dan fitur off-road siap menemani petualangan Anda ke mana pun.',
+                'specifications' => ['Mesin' => '2.4L Diesel Turbo', 'Transmisi' => 'Automatic 6-percepatan', 'BBM' => 'Diesel', 'Kabin' => '7 kursi'],
+                'features' => ['AC Auto', 'Audio Layar', 'Kamera 360', 'Cruise Control', '4WD', '7 Airbag', 'ABS', 'EBD', 'VSC', 'HAC'],
+                'terms' => 'Harga belum termasuk BBM. Deposit Rp 1.000.000. Wajib lapor jika akan ke luar kota.',
+                'main_image' => 'cars/fortuner-gr.jpg',                 'gallery' => [],
+                'seat_count' => 7, 'door_count' => 5, 'luggage' => '4 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 3, 'name' => 'Honda CR-V Turbo', 'slug' => 'honda-cr-v-turbo',
+                'brand' => 'Honda', 'model' => 'CR-V Turbo', 'year' => 2023, 'transmission' => 'CVT', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 700000, 'price_per_week' => 4200000, 'price_per_month' => 15000000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Honda CR-V Turbo menawarkan perpaduan sempurna antara kenyamanan dan performa. Kabin luas, fitur keselamatan Honda Sensing, dan turbocharged engine yang responsif.',
+                'specifications' => ['Mesin' => '1.5L Turbo', 'Transmisi' => 'CVT', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['AC Auto', 'Panoramic Roof', 'Honda Sensing', 'Audio Premium', 'Kamera 360', '6 Airbag'],
+                'terms' => 'Harga belum termasuk BBM. Deposit Rp 500.000. Dilarang merokok di dalam mobil.',
+                'main_image' => 'cars/honda-cr-v.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 5, 'luggage' => '3 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+
+            // ── Luxury (cat 4) ──
+            [
+                'category_id' => 4, 'name' => 'BMW 320i Sport', 'slug' => 'bmw-320i-sport',
+                'brand' => 'BMW', 'model' => '320i Sport', 'year' => 2023, 'transmission' => 'Automatic', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 1500000, 'price_per_week' => 9000000, 'price_per_month' => 32000000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'BMW 320i Sport memberikan pengalaman berkendara premium dengan performa mesin bertenaga, interior mewah berbalut kulit, dan teknologi BMW terdepan. Cocok untuk acara VVIP dan bisnis.',
+                'specifications' => ['Mesin' => '2.0L Turbo', 'Transmisi' => 'Automatic 8-percepatan', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['Kursi Kulit', 'Sunroof', 'AC Auto 2-Zone', 'Audio Harman Kardon', 'iDrive', '6 Airbag', 'Parkir Sensor', 'Kamera 360'],
+                'terms' => 'Deposit Rp 2.000.000. Harga belum termasuk BBM. Wajib STNK asli dan SIM. Tidak untuk ke luar kota.',
+                'main_image' => 'cars/bmw-320i.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 4, 'luggage' => '3 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 4, 'name' => 'Mercedes-Benz C200', 'slug' => 'mercedes-benz-c200',
+                'brand' => 'Mercedes-Benz', 'model' => 'C200', 'year' => 2024, 'transmission' => 'Automatic', 'capacity' => 5,
+                'fuel_type' => 'Bensin', 'price_per_day' => 2000000, 'price_per_week' => 12000000, 'price_per_month' => 42000000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Mercedes-Benz C200 adalah sedan mewah yang elegan dan nyaman. Interior premium dengan ambient lighting, kursi memory elektrik, dan fitur keselamatan terkini dari Mercedes-Benz.',
+                'specifications' => ['Mesin' => '1.5L Turbo', 'Transmisi' => 'Automatic 9-percepatan', 'BBM' => 'Bensin', 'Kabin' => '5 kursi'],
+                'features' => ['Kursi Kulit Nappa', 'Ambient Lighting', 'Sunroof', 'Audio Burmester', 'AC Auto', '8 Airbag', 'Park Assist', 'Kamera 360'],
+                'terms' => 'Deposit Rp 3.000.000. Harga belum termasuk BBM. Wajib STNK asli dan SIM A. Tidak untuk ke luar kota.',
+                'main_image' => 'cars/mercedes-c200.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 4, 'luggage' => '3 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+
+            // ── Commercial / Bus (cat 5) ──
+            [
+                'category_id' => 5, 'name' => 'Toyota Hiace Premio', 'slug' => 'toyota-hiace-premio',
+                'brand' => 'Toyota', 'model' => 'Hiace Premio', 'year' => 2023, 'transmission' => 'Manual', 'capacity' => 16,
+                'fuel_type' => 'Diesel', 'price_per_day' => 1200000, 'price_per_week' => 7200000, 'price_per_month' => 26000000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Toyota Hiace Premio adalah kendaraan rombongan paling populer. Kabin luas untuk 16 penumpang dengan kursi ergonomis, AC merata, dan bagasi besar. Cocok untuk study tour, outing, dan perjalanan rombongan.',
+                'specifications' => ['Mesin' => '2.5L Diesel', 'Transmisi' => 'Manual 5-percepatan', 'BBM' => 'Diesel', 'Kabin' => '16 kursi'],
+                'features' => ['AC Double Blower', 'Audio DVD', 'USB Port', 'Kursi Reclining', 'Bagasi Luas', 'Sabuk Penumpang'],
+                'terms' => 'Harga termasuk driver dan BBM untuk rute dalam kota. Luar kota dikenakan biaya tambahan.',
+                'main_image' => 'cars/hiace-premio.jpg',                 'gallery' => [],
+                'seat_count' => 16, 'door_count' => 4, 'luggage' => '8 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 5, 'name' => 'Bus Medium Isuzu NQR', 'slug' => 'bus-medium-isuzu-nqr',
+                'brand' => 'Isuzu', 'model' => 'NQR', 'year' => 2022, 'transmission' => 'Manual', 'capacity' => 32,
+                'fuel_type' => 'Diesel', 'price_per_day' => 2500000, 'price_per_week' => 15000000, 'price_per_month' => 50000000,
+                'discount_percent' => 10, 'is_featured' => false, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Bus medium Isuzu NQR berkapasitas 32 penumpang dengan kursi lega dan AC dingin. Cocok untuk perjalanan wisata rombongan besar, arisan, atau acara perusahaan.',
+                'specifications' => ['Mesin' => 'Diesel Turbo', 'Transmisi' => 'Manual 6-percepatan', 'BBM' => 'Diesel', 'Kabin' => '32 kursi'],
+                'features' => ['AC Dingin', 'Audio', 'Kursi Reclining', 'Bagasi', 'TV LED', 'Mic'],
+                'terms' => 'Termasuk driver dan BBM. Luar kota dikenakan biaya menginap driver.',
+                'main_image' => 'cars/bus-isuzu.jpg',                 'gallery' => [],
+                'seat_count' => 32, 'door_count' => 2, 'luggage' => '15 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+
+            // ── EV (cat 6) ──
+            [
+                'category_id' => 6, 'name' => 'Hyundai Ioniq 5', 'slug' => 'hyundai-ioniq-5',
+                'brand' => 'Hyundai', 'model' => 'Ioniq 5', 'year' => 2024, 'transmission' => 'Automatic', 'capacity' => 5,
+                'fuel_type' => 'Listrik', 'price_per_day' => 900000, 'price_per_week' => 5400000, 'price_per_month' => 19000000,
+                'discount_percent' => 5, 'is_featured' => true, 'is_available' => true, 'is_popular' => true,
+                'description' => 'Hyundai Ioniq 5 adalah mobil listrik futuristik dengan desain retro-modern. Jarak tempuh hingga 480 km, fitur V2L (Vehicle to Load), dan pengisian cepat. Pilihan ramah lingkungan untuk masa depan.',
+                'specifications' => ['Mesin' => 'Motor Listrik 217 hp', 'Transmisi' => 'Reduction Gear', 'Baterai' => '72.6 kWh', 'Range' => '480 km', 'Kabin' => '5 kursi'],
+                'features' => ['Sunroof', 'AC Auto 2-Zone', 'Audio Bose', 'Kamera 360', 'V2L', 'Smart Cruise', '6 Airbag', 'Wireless Charger'],
+                'terms' => 'Harga sudah termasuk biaya charging di pool. Deposit Rp 1.000.000. Tidak untuk ke luar kota.',
+                'main_image' => 'cars/ioniq-5.jpg',                 'gallery' => [],
+                'seat_count' => 5, 'door_count' => 5, 'luggage' => '3 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+            [
+                'category_id' => 6, 'name' => 'Wuling Air EV', 'slug' => 'wuling-air-ev',
+                'brand' => 'Wuling', 'model' => 'Air EV', 'year' => 2024, 'transmission' => 'Automatic', 'capacity' => 4,
+                'fuel_type' => 'Listrik', 'price_per_day' => 350000, 'price_per_week' => 2100000, 'price_per_month' => 7500000,
+                'discount_percent' => 10, 'is_featured' => true, 'is_available' => true, 'is_popular' => false,
+                'description' => 'Wuling Air EV adalah city car listrik mungil yang lincah dan praktis. Biaya operasional sangat rendah, cocok untuk mobilitas harian di perkotaan dengan gaya modern.',
+                'specifications' => ['Mesin' => 'Motor Listrik 41 hp', 'Transmisi' => 'Reduction Gear', 'Baterai' => '18 kWh', 'Range' => '200 km', 'Kabin' => '4 kursi'],
+                'features' => ['AC', 'Power Window', 'Audio Bluetooth', 'Kamera Mundur', 'Central Lock'],
+                'terms' => 'Harga sudah termasuk biaya charging di pool. Deposit Rp 300.000.',
+                'main_image' => 'cars/wuling-air-ev.jpg',                 'gallery' => [],
+                'seat_count' => 4, 'door_count' => 4, 'luggage' => '1 koper', 'minimum_rent_days' => 1, 'status' => 'active',
+            ],
+        ];
+
+        foreach ($cars as $data) {
+            Car::create($data);
+        }
+    }
+
+    private function seedServices(): void
+    {
+        $services = [
+            [
+                'name' => 'Rental Mobil Harian', 'slug' => 'rental-mobil-harian',
+                'icon' => 'fa-calendar-day', 'description' => 'Sewa mobil harian dengan harga kompetitif. Cocok untuk perjalanan bisnis, liburan, atau keperluan pribadi. Nikmati kebebasan mobilitas tanpa batas dengan armada kami yang terawat dan siap pakai.',
+                'sort_order' => 1,
+            ],
+            [
+                'name' => 'Rental Mobil Mingguan', 'slug' => 'rental-mobil-mingguan',
+                'icon' => 'fa-calendar-week', 'description' => 'Butuh mobil untuk perjalanan panjang? Pilihan sewa mingguan kami menawarkan harga lebih hemat dengan fleksibilitas tinggi. Cocok untuk perjalanan dinas atau liburan keluarga.',
+                'sort_order' => 2,
+            ],
+            [
+                'name' => 'Rental Mobil Bulanan', 'slug' => 'rental-mobil-bulanan',
+                'icon' => 'fa-calendar-alt', 'description' => 'Solusi transportasi jangka panjang dengan harga paling ekonomis. Ideal untuk karyawan, kontraktor, atau kebutuhan operasional perusahaan Anda.',
+                'sort_order' => 3,
+            ],
+            [
+                'name' => 'Layanan Driver Profesional', 'slug' => 'layanan-driver-profesional',
+                'icon' => 'fa-user-tie', 'description' => 'Driver berpengalaman dan bersertifikat siap menemani perjalanan Anda. Semua driver kami telah melalui pelatihan keselamatan dan pelayanan prima.',
+                'sort_order' => 4,
+            ],
+            [
+                'name' => 'Antar Jemput Bandara', 'slug' => 'antar-jemput-bandara',
+                'icon' => 'fa-plane-arrival', 'description' => 'Layanan antar jemput bandara tepat waktu dengan pemantauan jadwal penerbangan real-time. Driver kami akan menunggu Anda di terminal kedatangan.',
+                'sort_order' => 5,
+            ],
+            [
+                'name' => 'Mobil untuk Acara Khusus', 'slug' => 'mobil-untuk-acara-khusus',
+                'icon' => 'fa-glass-cheers', 'description' => 'Armada mewah untuk pernikahan, wisuda, gathering perusahaan, dan acara spesial lainnya. Tersedia paket dekorasi dan dokumentasi.',
+                'sort_order' => 6,
+            ],
+        ];
+        foreach ($services as $data) {
+            Service::firstOrCreate(['slug' => $data['slug']], $data);
+        }
+    }
+
+    private function seedTestimonials(): void
+    {
+        $testimonials = [
+            ['name' => 'Budi Santoso', 'position' => 'Marketing Manager', 'company' => 'PT. Maju Jaya Abadi', 'content' => 'Pelayanan sangat memuaskan! Mobil bersih, tepat waktu, dan driver sangat profesional. Sudah 3 kali rental di sini dan tidak pernah kecewa. Harga juga terjangkau untuk kualitas yang didapatkan.', 'rating' => 5, 'avatar' => 'testimonials/avatar-1.jpg', 'sort_order' => 1],
+            ['name' => 'Siti Rahmawati', 'position' => 'Ibu Rumah Tangga', 'company' => '', 'content' => 'Rental mobil untuk liburan keluarga ke Bandung. Toyota Innova nya nyaman banget, AC dingin, anak-anak betah. Driver pak Agus ramah dan hati-hati. Next pasti rental sini lagi!', 'rating' => 5, 'avatar' => 'testimonials/avatar-2.jpg', 'sort_order' => 2],
+            ['name' => 'Ahmad Fauzi', 'position' => 'Event Organizer', 'company' => 'Fauzi Event Planner', 'content' => 'Sewa 5 unit mobil untuk acara pernikahan klien. Semua datang tepat waktu, driver pakai seragam rapi. Tamu undangan pada puas. Recommended untuk acara-acara penting!', 'rating' => 5, 'avatar' => 'testimonials/avatar-3.jpg', 'sort_order' => 3],
+            ['name' => 'Dewi Lestari', 'position' => 'Travel Blogger', 'company' => 'JalanJalan.co.id', 'content' => 'Baru pertama coba rental mobil listrik Ioniq 5. Ternyata keren banget! Mobilnya canggih, silent, dan irit. Cocok buat konten traveling. Staffnya juga ramah menjelaskan fitur-fiturnya.', 'rating' => 5, 'avatar' => 'testimonials/avatar-4.jpg', 'sort_order' => 4],
+            ['name' => 'Rudi Hartono', 'position' => 'Direktur', 'company' => 'CV. Karya Mandiri', 'content' => 'Sudah jadi langganan untuk rental mobil operasional perusahaan. Proses cepat, administrasi mudah, dan selalu ada stok mobil. Harga bulanan juga sangat kompetitif.', 'rating' => 4, 'avatar' => 'testimonials/avatar-5.jpg', 'sort_order' => 5],
+        ];
+        foreach ($testimonials as $data) {
+            Testimonial::create($data);
+        }
+    }
+
+    private function seedArticles(): void
+    {
+        $articles = [
+            [
+                'title' => 'Tips Memilih Mobil Rental Yang Tepat Untuk Liburan Keluarga',
+                'slug' => 'tips-memilih-mobil-rental-untuk-liburan-keluarga',
+                'category' => 'Tips & Trik',
+                'content' => "<p>Liburan keluarga semakin menyenangkan dengan persiapan yang matang. Salah satu hal penting yang perlu diperhatikan adalah pemilihan mobil rental yang tepat. Berikut tips lengkapnya:</p><h2>1. Sesuaikan dengan Jumlah Anggota Keluarga</h2><p>Pastikan kapasitas mobil mencukupi untuk seluruh anggota keluarga. MPV seperti Toyota Avanza atau Innova menjadi pilihan favorit untuk keluarga dengan 5-7 orang.</p><h2>2. Perhatikan Kondisi Mobil</h2><p>Cek kondisi mobil secara langsung sebelum memutuskan untuk rental. Perhatikan kebersihan kabin, kondisi AC, ban, dan mesin.</p><h2>3. Pilih Durasi Sewa yang Tepat</h2><p>Harga sewa mingguan atau bulanan biasanya lebih hemat dibandingkan harian. Hitung kebutuhan perjalanan Anda dengan cermat.</p><h2>4. Cek Fasilitas yang Dibutuhkan</h2><p>Pastikan mobil memiliki fitur yang dibutuhkan seperti AC double blower untuk perjalanan jauh, USB port untuk mengisi daya gadget, dan bagasi yang cukup.</p><h2>5. Baca Ulasan Pelanggan</h2><p>Lihat testimoni pelanggan sebelumnya untuk mengetahui kualitas pelayanan rental mobil yang akan Anda pilih.</p>",
+                'excerpt' => 'Liburan keluarga semakin menyenangkan dengan persiapan matang. Simak tips memilih mobil rental yang tepat untuk perjalanan keluarga Anda.',
+                'image' => 'articles/tips-liburan.jpg',
+                'author' => 'Admin Bless Rent Car', 'is_published' => true, 'published_at' => now()->subDays(2),
+                'meta_title' => 'Tips Memilih Mobil Rental untuk Liburan Keluarga | Bless Rent Car',
+                'meta_description' => 'Panduan lengkap memilih mobil rental yang tepat untuk liburan keluarga. Simak tips dari Bless Rent Car sebelum Anda booking.',
+                'meta_keywords' => 'tips rental mobil, liburan keluarga, sewa mobil, mobil keluarga',
+            ],
+            [
+                'title' => 'Keunggulan Mobil Listrik Untuk Rental Harian di Perkotaan',
+                'slug' => 'keunggulan-mobil-listrik-rental-harian-perkotaan',
+                'category' => 'Teknologi',
+                'content' => "<p>Mobil listrik semakin populer sebagai pilihan kendaraan rental di perkotaan. Hyundai Ioniq 5 dan Wuling Air EV menjadi primadona baru di industri rental mobil. Berikut keunggulannya:</p><h2>1. Biaya Operasional Sangat Rendah</h2><p>Biaya charging listrik jauh lebih murah dibandingkan BBM. Dalam satu kali pengisian penuh, biaya yang dikeluarkan hanya sepertiga dari harga BBM untuk jarak tempuh yang sama.</p><h2>2. Ramah Lingkungan</h2><p>Mobil listrik nol emisi, membantu mengurangi polusi udara di perkotaan. Cocok untuk Anda yang peduli lingkungan.</p><h2>3. Performa Responsif</h2><p>Akselerasi mobil listrik lebih responsif berkat torsi instan dari motor listrik. Pengalaman berkendara menjadi lebih menyenangkan.</p><h2>4. Fitur Canggih</h2><p>Mobil listrik umumnya dilengkapi fitur teknologi terkini seperti V2L (Vehicle to Load) yang bisa digunakan untuk menyalakan perangkat elektronik.</p><h2>5. Biaya Perawatan Minimal</h2><p>Komponen mesin mobil listrik lebih sederhana sehingga biaya perawatannya jauh lebih rendah dibandingkan mobil konvensional.</p>",
+                'excerpt' => 'Mobil listrik menjadi primadona baru di industri rental. Simak 5 keunggulan mobil listrik untuk rental harian di perkotaan.',
+                'image' => 'articles/mobil-listrik.jpg',
+                'author' => 'Admin Bless Rent Car', 'is_published' => true, 'published_at' => now()->subDays(5),
+                'meta_title' => 'Keunggulan Mobil Listrik untuk Rental Harian | Bless Rent Car',
+                'meta_description' => 'Mobil listrik semakin populer. Simak keunggulan Hyundai Ioniq 5 dan Wuling Air EV untuk rental harian di perkotaan.',
+                'meta_keywords' => 'mobil listrik, rental mobil listrik, ioniq 5, wuling air ev',
+            ],
+            [
+                'title' => 'Panduan Lengkap Sewa Mobil Untuk Pernikahan',
+                'slug' => 'panduan-lengkap-sewa-mobil-untuk-pernikahan',
+                'category' => 'Acara Khusus',
+                'content' => "<p>Hari pernikahan adalah momen spesial yang membutuhkan persiapan matang, termasuk transportasi. Berikut panduan lengkap sewa mobil untuk pernikahan:</p><h2>1. Tentukan Jenis Mobil</h2><p>Pilih mobil sesuai konsep pernikahan. BMW 320i atau Mercedes C200 cocok untuk kesan mewah dan elegan. Untuk rombongan keluarga, Innova Zenix bisa menjadi pilihan.</p><h2>2. Pesan Jauh-jauh Hari</h2><p>Booking minimal 1-2 bulan sebelum hari H untuk memastikan ketersediaan mobil dan mendapatkan harga terbaik.</p><h2>3. Sewa Paket dengan Driver</h2><p>Driver profesional akan membantu Anda mengatur waktu dan rute perjalanan di hari pernikahan, sehingga Anda bisa fokus pada acara.</p><h2>4. Cek Detail Paket</h2><p>Pastikan Anda memahami apa saja yang termasuk dalam paket sewa, termasuk dekorasi mobil jika diperlukan.</p><h2>5. Siapkan Budget Cadangan</h2><p>Selain biaya sewa, siapkan budget untuk tips driver dan biaya tambahan jika ada perubahan jadwal.</p>",
+                'excerpt' => 'Persiapkan transportasi pernikahan dengan matang. Simak panduan lengkap sewa mobil untuk hari spesial Anda dari Bless Rent Car.',
+                'image' => 'articles/mobil-pernikahan.jpg',
+                'author' => 'Admin Bless Rent Car', 'is_published' => true, 'published_at' => now()->subDays(7),
+                'meta_title' => 'Panduan Lengkap Sewa Mobil untuk Pernikahan | Bless Rent Car',
+                'meta_description' => 'Booking mobil pernikahan jauh-jauh hari. Dapatkan panduan lengkap sewa mobil mewah untuk hari spesial Anda.',
+                'meta_keywords' => 'sewa mobil pernikahan, mobil mewah, wedding car, BMW, Mercedes',
+            ],
+            [
+                'title' => '5 Destinasi Wisata Keluarga Favorit di Sekitar Jakarta',
+                'slug' => '5-destinasi-wisata-keluarga-favorit-jakarta',
+                'category' => 'Wisata',
+                'content' => "<p>Liburan akhir pekan bersama keluarga? Berikut 5 destinasi wisata keluarga favorit yang bisa dijangkau dengan mobil rental dari Jakarta:</p><h2>1. Bandung (2-3 jam)</h2><p>Kota kembang menawarkan berbagai wisata kuliner, factory outlet, dan tempat wisata alam seperti Tangkuban Perahu dan Kawah Putih. Cocok untuk liburan 2-3 hari.</p><h2>2. Puncak, Bogor (1.5-2 jam)</h2><p>Udara sejuk pegunungan menjadi daya tarik utama. Kunjungi Taman Safari Indonesia, kebun teh, dan berbagai villa dengan pemandangan indah.</p><h2>3. Anyer-Carita (3-4 jam)</h2><p>Nikmati pantai pasir putih dengan berbagai aktivitas air. Cocok untuk liburan keluarga dengan anak-anak.</p><h2>4. Lembang, Bandung Barat (2.5-3 jam)</h2><p>Destinasi wisata modern dengan Floating Market, Farmhouse, dan The Great Asia Afrika yang instagramable.</p><h2>5. Yogyakarta (8-10 jam)</h2><p>Untuk liburan panjang, jogja menawarkan wisata budaya, candi, dan kuliner yang kaya. Bisa dicapai dengan nyaman menggunakan Innova atau Hiace.</p>",
+                'excerpt' => 'Liburan akhir pekan bersama keluarga? Ini 5 destinasi wisata favorit yang bisa dijangkau dengan mobil rental dari Jakarta.',
+                'image' => 'articles/destinasi-wisata.jpg',
+                'author' => 'Admin Bless Rent Car', 'is_published' => true, 'published_at' => now()->subDays(10),
+                'meta_title' => '5 Destinasi Wisata Keluarga Favorit Sekitar Jakarta | Bless Rent Car',
+                'meta_description' => 'Rekomendasi 5 destinasi wisata keluarga favorit yang bisa dijangkau dengan mobil rental dari Jakarta. Liburan seru bersama keluarga.',
+                'meta_keywords' => 'destinasi wisata, liburan keluarga, wisata Jakarta, rental mobil wisata',
+            ],
+            [
+                'title' => 'Cara Menghemat Biaya Rental Mobil Untuk Perjalanan Bisnis',
+                'slug' => 'cara-menghemat-biaya-rental-mobil-bisnis',
+                'category' => 'Tips & Trik',
+                'content' => "<p>Perjalanan bisnis seringkali membutuhkan mobilitas tinggi. Berikut cara menghemat biaya rental mobil untuk perjalanan bisnis Anda:</p><h2>1. Pilih Paket Rental Bulanan</h2><p>Jika Anda sering melakukan perjalanan bisnis, pilih paket rental bulanan yang lebih ekonomis dibandingkan harian.</p><h2>2. Gunakan Mobil yang Tepat</h2><p>Sesuaikan jenis mobil dengan kebutuhan. Untuk meeting internal, city car sudah cukup. Untuk menjamu klien, pilih MPV premium atau SUV.</p><h2>3. Manfaatkan Program Diskon</h2><p>Bless Rent Car menawarkan diskon khusus untuk pelanggan korporasi dan pemesanan dalam jumlah banyak.</p><h2>4. Hindari Biaya Tambahan</h2><p>Kembalikan mobil tepat waktu sesuai perjanjian untuk menghindari denda keterlambatan. Isi BBM sesuai ketentuan.</p><h2>5. Booking Online</h2><p>Pemesanan melalui website Bless Rent Car memberikan harga khusus dan proses yang lebih cepat.</p>",
+                'excerpt' => 'Perjalanan bisnis membutuhkan mobilitas tinggi. Simak cara menghemat biaya rental mobil untuk perjalanan bisnis perusahaan Anda.',
+                'image' => 'articles/tips-bisnis.jpg',
+                'author' => 'Admin Bless Rent Car', 'is_published' => true, 'published_at' => now()->subDays(14),
+                'meta_title' => 'Cara Menghemat Biaya Rental Mobil untuk Bisnis | Bless Rent Car',
+                'meta_description' => 'Tips menghemat biaya rental mobil untuk perjalanan bisnis. Dapatkan penawaran khusus korporasi dari Bless Rent Car.',
+                'meta_keywords' => 'rental mobil bisnis, hemat biaya, mobil korporasi, sewa mobil perusahaan',
+            ],
+        ];
+        foreach ($articles as $data) {
+            Article::create($data);
+        }
+    }
+
+    private function seedFaqs(): void
+    {
+        $faqs = [
+            ['question' => 'Apa saja dokumen yang diperlukan untuk rental mobil?', 'answer' => 'Dokumen yang diperlukan adalah: KTP asli (untuk WNI), SIM A atau B1 yang masih berlaku, dan kartu keluarga (KK) atau NPWP sebagai dokumen pendukung. Untuk penyewa asing, diperlukan paspor dan SIM Internasional.', 'category' => 'Persyaratan', 'sort_order' => 1],
+            ['question' => 'Berapa minimal durasi sewa mobil?', 'answer' => 'Minimal durasi sewa adalah 1x24 jam untuk mobil biasa. Untuk mobil listrik minimal 2x24 jam. Tersedia juga paket mingguan dan bulanan dengan harga lebih hemat.', 'category' => 'Sewa & Harga', 'sort_order' => 2],
+            ['question' => 'Apakah bisa rental mobil tanpa driver?', 'answer' => 'Tentu bisa! Kami menyediakan opsi lepas kunci (tanpa driver) dan dengan driver. Harga sewa tanpa driver lebih murah, namun Anda harus memenuhi persyaratan dokumen yang berlaku.', 'category' => 'Layanan', 'sort_order' => 3],
+            ['question' => 'Bagaimana jika mobil mengalami kerusakan saat disewa?', 'answer' => 'Jika kerusakan terjadi karena kelalaian penyewa, biaya perbaikan menjadi tanggungan penyewa. Namun jika kerusakan terjadi di luar kendali (force majeure) atau karena faktor teknis, kami yang akan menangani. Disarankan memiliki asuransi perlindungan tambahan.', 'category' => 'Layanan', 'sort_order' => 4],
+            ['question' => 'Apakah ada biaya tambahan untuk pengantaran mobil?', 'answer' => 'Pengantaran mobil ke lokasi Anda GRATIS untuk wilayah Jakarta, Bogor, Depok, Tangerang, dan Bekasi (Jabodetabek). Untuk wilayah luar Jabodetabek dikenakan biaya tambahan sesuai jarak.', 'category' => 'Pengantaran', 'sort_order' => 5],
+            ['question' => 'Bagaimana cara melakukan pembayaran?', 'answer' => 'Pembayaran dapat dilakukan melalui transfer bank (BCA, Mandiri, BRI, BNI) atau tunai saat pengambilan mobil. Untuk pemesanan online, kami menerima pembayaran DP minimal 50% dan sisanya saat pengambilan mobil.', 'category' => 'Pembayaran', 'sort_order' => 6],
+            ['question' => 'Apakah tersedia mobil untuk 16 penumpang atau lebih?', 'answer' => 'Ya, kami menyediakan Toyota Hiace Premio (16 kursi) dan Bus Medium Isuzu NQR (32 kursi). Cocok untuk rombongan family gathering, outing, study tour, atau acara perusahaan.', 'category' => 'Armada', 'sort_order' => 7],
+            ['question' => 'Bisakah saya membatalkan pesanan?', 'answer' => 'Pembatalan dapat dilakukan dengan ketentuan: pembatalan H-3 mendapat refund 100%, H-2 mendapat refund 50%, H-1 atau hari H tidak mendapat refund. Pembatalan karena force majeure akan dipertimbangkan secara khusus.', 'category' => 'Pembatalan', 'sort_order' => 8],
+            ['question' => 'Apakah boleh merokok di dalam mobil?', 'answer' => 'Tidak, seluruh armada kami adalah kendaraan BEBAS ROKOK. Denda akan dikenakan jika penyewa kedapatan merokok di dalam mobil. Hal ini untuk menjaga kenyamanan dan kebersihan bagi penyewa berikutnya.', 'category' => 'Ketentuan', 'sort_order' => 9],
+            ['question' => 'Apakah ada layanan antar jemput bandara?', 'answer' => 'Ya, kami menyediakan layanan antar jemput bandara (Soekarno-Hatta, Halim, dan bandara lainnya). Driver kami akan memantau jadwal penerbangan Anda secara real-time dan menjemput tepat di terminal kedatangan.', 'category' => 'Layanan', 'sort_order' => 10],
+        ];
+        foreach ($faqs as $data) {
+            Faq::create($data);
+        }
+    }
+
+    private function seedPages(): void
+    {
+        $pages = [
+            [
+                'title' => 'Tentang Kami', 'slug' => 'tentang-kami',
+                'content' => '<h2>PT. BLESS TRANS MANDIRI</h2><p>Didirikan pada tahun 2010, PT. BLESS TRANS MANDIRI (Bless Rent Car) telah menjadi salah satu penyedia layanan rental mobil terpercaya di Indonesia. Dengan pengalaman lebih dari 15 tahun, kami berkomitmen untuk memberikan solusi transportasi terbaik bagi pelanggan kami.</p><h3>Visi</h3><p>Menjadi perusahaan rental mobil terdepan di Indonesia yang memberikan layanan terbaik, armada berkualitas, dan harga terjangkau.</p><h3>Misi</h3><ul><li>Menyediakan armada kendaraan yang terawat, bersih, dan siap pakai</li><li>Memberikan pelayanan profesional dan ramah 24 jam</li><li>Menawarkan harga kompetitif dengan berbagai pilihan paket</li><li>Mengutamakan keselamatan dan kenyamanan pelanggan</li><li>Berkontribusi dalam industri transportasi Indonesia</li></ul><h3>Nilai-Nilai Kami</h3><p><strong>Integritas</strong> — Kami menjunjung tinggi kejujuran dan transparansi dalam setiap transaksi.<br><strong>Profesionalisme</strong> — Kami memberikan layanan terbaik dengan standar profesional tinggi.<br><strong>Kepuasan Pelanggan</strong> — Kepuasan Anda adalah prioritas utama kami.<br><strong>Inovasi</strong> — Kami terus berinovasi untuk memberikan layanan terbaik.</p>',
+                'meta_title' => 'Tentang Kami | Bless Rent Car', 'meta_description' => 'PT. BLESS TRANS MANDIRI adalah perusahaan rental mobil terpercaya dengan pengalaman 15+ tahun. Kenali lebih lanjut tentang kami.',
+                'is_published' => true,
+            ],
+            [
+                'title' => 'Cara Booking', 'slug' => 'cara-booking',
+                'content' => '<h2>Panduan Booking Mobil</h2><p>Mudah dan cepat! Ikuti langkah-langkah berikut untuk memesan mobil di Bless Rent Car:</p><h3>Langkah 1: Pilih Mobil</h3><p>Telusuri katalog armada kami dan pilih mobil yang sesuai dengan kebutuhan Anda. Anda bisa memfilter berdasarkan kategori, harga, atau tipe transmisi.</p><h3>Langkah 2: Tentukan Jadwal</h3><p>Pilih tanggal dan waktu pengambilan serta pengembalian mobil. Tersedia opsi sewa harian, mingguan, dan bulanan.</p><h3>Langkah 3: Isi Data Diri</h3><p>Lengkapi data diri Anda, termasuk nama, nomor telepon, email, dan alamat pengantaran.</p><h3>Langkah 4: Konfirmasi & Pembayaran</h3><p>Periksa kembali detail pemesanan Anda. Lakukan pembayaran DP 50% melalui transfer bank yang tersedia.</p><h3>Langkah 5: Nikmati Perjalanan</h3><p>Mobil akan diantar ke lokasi Anda sesuai jadwal. Nikmati perjalanan Anda bersama Bless Rent Car!</p><p>Butuh bantuan? Hubungi kami di <a href="tel:6281225062153">+62 812-2506-2153</a> atau melalui live chat.</p>',
+                'meta_title' => 'Cara Booking Mobil | Bless Rent Car', 'meta_description' => 'Panduan lengkap cara booking mobil di Bless Rent Car. Mudah, cepat, dan praktis. Pesan sekarang!',
+                'is_published' => true,
+            ],
+            [
+                'title' => 'Syarat & Ketentuan', 'slug' => 'syarat-dan-ketentuan',
+                'content' => '<h2>Syarat & Ketentuan Rental Mobil</h2><h3>Persyaratan Penyewa</h3><ul><li>Penyewa wajib memiliki KTP asli dan SIM A/B1 yang masih berlaku</li><li>Usia minimal 21 tahun untuk sewa lepas kunci, 23 tahun untuk mobil mewah</li><li>Menyetujui surat perjanjian rental yang berlaku</li></ul><h3>Ketentuan Pemakaian</h3><ul><li>Mobil harus dikembalikan dalam kondisi sama seperti saat pengambilan</li><li>Dilarang merokok di dalam mobil (denda Rp 250.000)</li><li>Dilarang membawa mobil ke luar kota tanpa izin tertulis</li><li>Dilarang menyewakan kembali mobil kepada pihak ketiga</li></ul><h3>Pembayaran</h3><ul><li>DP 50% saat pemesanan, pelunasan saat pengambilan mobil</li><li>Deposit refundable (dikembalikan setelah mobil diperiksa)</li><li>Pembayaran melalui transfer bank atau tunai</li></ul><h3>Pembatalan</h3><ul><li>H-3: refund 100%</li><li>H-2: refund 50%</li><li>H-1 atau H: tidak ada refund</li></ul>',
+                'meta_title' => 'Syarat & Ketentuan Rental Mobil | Bless Rent Car', 'meta_description' => 'Baca syarat dan ketentuan rental mobil Bless Rent Car sebelum melakukan pemesanan. Transparan dan jelas.',
+                'is_published' => true,
+            ],
+            [
+                'title' => 'Kebijakan Privasi', 'slug' => 'kebijakan-privasi',
+                'content' => '<h2>Kebijakan Privasi</h2><p>PT. BLESS TRANS MANDIRI menghormati privasi Anda. Kebijakan privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.</p><h3>Informasi yang Kami Kumpulkan</h3><ul><li>Data diri: nama, alamat, nomor telepon, email</li><li>Data dokumen: KTP, SIM (hanya untuk keperluan rental)</li><li>Data pemesanan: riwayat booking, preferensi mobil</li></ul><h3>Penggunaan Informasi</h3><ul><li>Memproses pemesanan dan pembayaran</li><li>Memberikan layanan pelanggan dan dukungan</li><li>Mengirimkan informasi promo dan penawaran (dengan izin Anda)</li><li>Meningkatkan kualitas layanan kami</li></ul><h3>Perlindungan Data</h3><p>Kami menggunakan sistem keamanan standar industri untuk melindungi data Anda. Data Anda tidak akan dijual atau dibagikan kepada pihak ketiga tanpa persetujuan Anda, kecuali diwajibkan oleh hukum.</p>',
+                'meta_title' => 'Kebijakan Privasi | Bless Rent Car', 'meta_description' => 'Kebijakan privasi Bless Rent Car. Informasi tentang bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda.',
+                'is_published' => true,
+            ],
+        ];
+        foreach ($pages as $data) {
+            Page::firstOrCreate(['slug' => $data['slug']], $data);
+        }
+    }
+
+    private function seedSliders(): void
+    {
+        $sliders = [
+            ['title' => 'Sewa Mobil Terbaik di Indonesia', 'subtitle' => 'PT. BLESS TRANS MANDIRI', 'description' => 'Nikmati perjalanan Anda dengan armada berkualitas, harga terjangkau, dan layanan profesional 24 jam.', 'image' => 'sliders/slide-1.jpg', 'link' => '/cars', 'button_text' => 'Lihat Armada', 'sort_order' => 1],
+            ['title' => 'Promo Spesial Akhir Pekan', 'subtitle' => 'Diskon Hingga 30%', 'description' => 'Dapatkan penawaran menarik untuk rental mobil akhir pekan. Pesan sekarang dan nikmati perjalanan Anda!', 'image' => 'sliders/slide-2.jpg', 'link' => '/booking', 'button_text' => 'Pesan Sekarang', 'sort_order' => 2],
+            ['title' => 'Layanan Antar Jemput', 'subtitle' => 'Driver Profesional & Ramah', 'description' => 'Pilih dengan atau tanpa driver. Semua driver kami berpengalaman dan memiliki SIM yang lengkap.', 'image' => 'sliders/slide-3.jpg', 'link' => '/services', 'button_text' => 'Lihat Layanan', 'sort_order' => 3],
+        ];
+        foreach ($sliders as $data) {
+            Slider::create($data);
+        }
+    }
+}
